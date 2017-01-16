@@ -11,7 +11,7 @@ def req():
 
 
 @req.command()
-@click.option('--update', default=False, help='Updates all libraries versions.')
+@click.option('--update', is_flag=True, help='Updates all libraries versions.')
 def compile(update):
     """
     Update requirements
