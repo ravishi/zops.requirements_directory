@@ -31,10 +31,6 @@ setup(
     include_package_data=True,
     packages=['zops', 'zops.requirements_directory'],
     namespace_packages=['zops'],
-    entry_points="""
-        [zops.plugins]
-        req=zops.requirements_directory.cli:req
-    """,
 
     install_requires=[
         'zerotk.zops',
@@ -44,4 +40,9 @@ setup(
     tests_require=[],
 
     license="MIT license",
+
+    entry_points="""
+    [zops.plugins]
+    requirements-directory=zops.requirements_directory.cli:main
+    """,
 )

@@ -5,12 +5,12 @@ import click
 click.disable_unicode_literals_warning = True
 
 
-@click.group()
-def req():
+@click.group('requirements-directory')
+def main():
     pass
 
 
-@req.command()
+@main.command()
 @click.option('--update', is_flag=True, help='Updates all libraries versions.')
 def compile(update):
     """
