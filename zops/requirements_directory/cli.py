@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+import os
+
 import click
+from zerotk.zops import Console
 
 
 click.disable_unicode_literals_warning = True
@@ -34,6 +37,28 @@ def compile(update):
         import os
         return os.path.splitext(filename)[0] + '.txt'
 
+    def fixes(filename):
+        """
+        Replaces file:// references by local ones. 
+        """
+        def replace_file_references(line):
+            parts = line.split('file://')
+            if len(parts) > 1:
+                ref_path = parts[-1]
+                rel_path = os.path.relpath(ref_path)
+                return '-e {}'.format(rel_path)
+            return line
+
+        def is_setuptools_dependency(line):
+            return 'via setuptools' in line
+
+        with open(filename, 'r') as iss:
+            lines = iss.readlines()
+        lines = [replace_file_references(i) for i in lines]
+        lines = [i for i in lines if not is_setuptools_dependency(i)]
+        with open(filename, 'w') as oss:
+            oss.writelines(lines)
+
     base_params = ['--no-index', '-r']
     if update:
         base_params += ['-U']
@@ -41,11 +66,13 @@ def compile(update):
     for i_filename in glob('requirements/*.in'):
         output_filename = get_output_filename(i_filename)
         input_filenames = get_input_filenames(i_filename)
-        click.echo('{}: generating from {}'.format(output_filename, ', '.join(input_filenames)))
+        Console.info('{}: generating from {}'.format(output_filename, ', '.join(input_filenames)))
 
         params = base_params + input_filenames + ['-o', output_filename]
-        click.echo('$ pip-compile {}'.format(' '.join(params)))
+        Console.execution('pip-compile {}'.format(' '.join(params)))
         _pip_compile(*params)
+        Console.info('{}: '.format(output_filename))
+        fixes(output_filename)
 
 
 def _pip_compile(*args):
