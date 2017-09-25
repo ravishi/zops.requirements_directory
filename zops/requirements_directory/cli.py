@@ -33,15 +33,28 @@ def compile(update):
         result.append(filename)
         return result
 
+    def get_temporary_dependencies(filename):
+        """
+        List all dependencies declared in the input file that must be removed from the generated file (temporary).
+        """
+        result = []
+        with open(filename, 'r') as iss:
+            for i_line in iss.readlines():
+                if '#!TEMPORARY' in i_line:
+                    i_line = i_line.rsplit('#')[0]
+                    i_line = i_line.strip()
+                    result.append(i_line)
+        return result
+
     def get_output_filename(filename):
         import os
         return os.path.splitext(filename)[0] + '.txt'
 
-    def fixes(filename):
-        """
-        Replaces file:// references by local ones. 
-        """
+    def fixes(filename, temporary_dependencies):
         def replace_file_references(line):
+            """
+            Replaces file:// references by local ones.
+            """
             parts = line.split('file://')
             if len(parts) > 1:
                 ref_path = parts[-1]
@@ -50,29 +63,43 @@ def compile(update):
             return line
 
         def is_setuptools_dependency(line):
+            """
+            Remove setuptools dependencies from the generated file.
+            """
             return 'via setuptools' in line
+
+        def is_temporary_dependency(line):
+            """
+            Remove lines
+            """
+            for i_temporary_dependency in temporary_dependencies:
+                if i_temporary_dependency in line:
+                    return True
+            return False
 
         with open(filename, 'r') as iss:
             lines = iss.readlines()
         lines = [replace_file_references(i) for i in lines]
         lines = [i for i in lines if not is_setuptools_dependency(i)]
+        lines = [i for i in lines if not is_temporary_dependency(i)]
         with open(filename, 'w') as oss:
             oss.writelines(lines)
 
-    base_params = ['--no-index', '-r']
+    base_params = ['--no-index', '--no-emit-trusted-host', '-r']
     if update:
         base_params += ['-U']
 
     for i_filename in glob('requirements/*.in'):
         output_filename = get_output_filename(i_filename)
         input_filenames = get_input_filenames(i_filename)
+        temporary_dependencies = get_temporary_dependencies(i_filename)
         Console.info('{}: generating from {}'.format(output_filename, ', '.join(input_filenames)))
 
         params = base_params + input_filenames + ['-o', output_filename]
         Console.execution('pip-compile {}'.format(' '.join(params)))
         _pip_compile(*params)
         Console.info('{}: '.format(output_filename))
-        fixes(output_filename)
+        fixes(output_filename, temporary_dependencies)
 
 
 def _pip_compile(*args):
