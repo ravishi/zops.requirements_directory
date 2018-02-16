@@ -261,7 +261,6 @@ class Resolver(object):
                                                                     format_specifier(ireq)))
         return best_match
 
-    @functools.lru_cache(1000)
     def _iter_dependencies(self, ireq):
         """
         Given a pinned or editable InstallRequirement, collects all the

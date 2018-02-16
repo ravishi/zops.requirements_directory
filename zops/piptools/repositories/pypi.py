@@ -90,7 +90,6 @@ class PyPIRepository(BaseRepository):
         rmtree(self._download_dir, ignore_errors=True)
         rmtree(self._wheel_download_dir, ignore_errors=True)
 
-    @functools.lru_cache(1000)
     def find_all_candidates(self, req_name):
         if req_name not in self._available_candidates_cache:
             # pip 8 changed the internal API, making this a public method
