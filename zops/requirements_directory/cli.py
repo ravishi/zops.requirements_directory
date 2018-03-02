@@ -46,7 +46,7 @@ def compile(update):
             InstallRequirement.update_editable = lambda s, _o: InstallRequirement.update_editable_(s, True)
 
         with replaced_argv(args):
-            from piptools.scripts.compile import cli
+            from zops.piptools.scripts.compile import cli
             try:
                 cli()
             except SystemExit as e:
