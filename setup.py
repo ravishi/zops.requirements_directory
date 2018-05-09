@@ -34,8 +34,9 @@ setup(
 
     install_requires=[
         'zerotk.zops',
+        'zerotk.lib',
         'unipath',
-        # 'pip-tools',
+        'pip-tools',
     ],
     setup_requires=['setuptools_scm'],
     tests_require=[],
